@@ -1,0 +1,72 @@
+services:
+  # LocalStack - AWS services emulator
+  localstack:
+    container_name: cloudglass-localstack-dev
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"            # LocalStack Gateway
+      - "4510-4559:4510-4559"  # External services port range
+    environment:
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - SERVICES=s3,sqs,sns,iam
+      - DEFAULT_REGION=us-east-1
+      - PERSISTENCE=1
+      - PERSISTENCE_PATH=/var/lib/localstack/data
+      - LOCALSTACK_HOST=localstack
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "localstack-data-dev:/var/lib/localstack"
+      - "./localstack-init:/etc/localstack/init/ready.d"
+    networks:
+      - cloudglass-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # CloudGlass - Development mode with hot reloading
+  cloudglass:
+    container_name: cloudglass-app-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      localstack:
+        condition: service_healthy
+    networks:
+      - cloudglass-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/aws-config"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  localstack-data-dev:
+    driver: local
+
+networks:
+  cloudglass-network:
+    driver: bridge

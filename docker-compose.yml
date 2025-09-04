@@ -1,0 +1,81 @@
+services:
+  # LocalStack - AWS services emulator
+  localstack:
+    container_name: cloudglass-localstack
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"            # LocalStack Gateway
+      - "4510-4559:4510-4559"  # External services port range
+    environment:
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - SERVICES=s3,sqs,sns,iam
+      - DEFAULT_REGION=us-east-1
+      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_REMOVE_CONTAINERS=true
+      - LAMBDA_DOCKER_NETWORK=cloudglass_default
+      - PERSISTENCE=1
+      - PERSISTENCE_PATH=/var/lib/localstack/data
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "localstack-data:/var/lib/localstack"
+      - "./localstack-init:/etc/localstack/init/ready.d"
+    networks:
+      - cloudglass-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # CloudGlass - Next.js application
+  cloudglass:
+    container_name: cloudglass-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+      localstack:
+        condition: service_healthy
+    networks:
+      - cloudglass-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/aws-config"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: LocalStack Web UI for debugging
+  localstack-ui:
+    container_name: cloudglass-localstack-ui
+    image: localstack/localstack-pro:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - LOCALSTACK_HOST=localstack:4566
+    depends_on:
+      - localstack
+    networks:
+      - cloudglass-network
+    profiles:
+      - debug
+
+volumes:
+  localstack-data:
+    driver: local
+
+networks:
+  cloudglass-network:
+    driver: bridge
