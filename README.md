@@ -46,7 +46,6 @@ A modern, responsive web application for managing cloud infrastructure with a be
 - **Service Favorites** - Pin frequently used services for quick access
 - **Collapsible Sidebar** - Organized by service categories (Storage, Messaging, Security, etc.)
 - **Search Functionality** - Find services quickly with real-time search
-- **Status Indicators** - Visual status badges for service availability
 - **Modern Navigation** - Intuitive sidebar and top navigation with breadcrumbs
 
 ### 🔧 Technical Features
@@ -77,7 +76,6 @@ A modern, responsive web application for managing cloud infrastructure with a be
 - **Docker & Docker Compose** (recommended): For easy setup with LocalStack
 - **Node.js**: v18+ (recommended: v20+) - For local development
 - **npm**: v9+ or **yarn**: v1.22+ - For local development
-- **AWS Account** (optional): For production use
 
 ### 🐳 Docker Setup (Recommended)
 
@@ -187,134 +185,6 @@ You can modify these settings using the Settings panel in the application.
 - **AWS Integration**: AWS SDK v3 for JavaScript
 - **Development**: ESLint, TypeScript strict mode
 
-### Project Structure
-
-```
-src/
-├── app/
-│   ├── [service]/              # Dynamic service routing
-│   │   └── page.tsx           # Service-specific pages
-│   ├── api/                   # API Routes
-│   │   ├── s3/               # S3 API endpoints
-│   │   ├── sqs/              # SQS API endpoints
-│   │   ├── sns/              # SNS API endpoints
-│   │   └── iam/              # IAM API endpoints
-│   ├── globals.css           # Global styles with dark mode
-│   ├── layout.tsx            # App layout with theme provider
-│   └── page.tsx              # Home page
-├── components/
-│   ├── ui/                   # Reusable UI components
-│   ├── S3Manager.tsx         # S3 service management
-│   ├── SQSManager.tsx        # SQS service management
-│   ├── SNSManager.tsx        # SNS service management
-│   ├── IAMManager.tsx        # IAM service management
-│   ├── Layout.tsx            # Main layout wrapper
-│   ├── Sidebar.tsx           # Collapsible sidebar
-│   └── TopNavigation.tsx     # Top navigation bar
-├── contexts/
-│   ├── ThemeContext.tsx      # Dark mode management
-│   ├── FavoritesContext.tsx  # Service favorites
-│   └── ToastContext.tsx      # Toast notifications
-└── lib/
-    ├── aws-config.ts         # AWS client configuration
-    ├── api-client.ts         # API client utilities
-    └── services-config.ts    # Service definitions
-```
-
-### Key Design Patterns
-
-- **Component Composition**: Modular React components with TypeScript
-- **Custom Hooks**: Reusable logic extraction (useAWSClient, useFavorites)
-- **Context Providers**: Global state management (theme, favorites, toasts)
-- **Error Boundaries**: Comprehensive error handling and user feedback
-- **API Abstraction**: Centralized API client with consistent error handling
-- **Service Architecture**: Pluggable service system for easy AWS service addition
-
-## 🎨 UI/UX Design System
-
-### Glass Theme
-- **Translucent Cards**: Backdrop blur effects with subtle transparency
-- **Gradient Backgrounds**: Modern gradients with indigo and purple accents
-- **Consistent Spacing**: 8px grid system for perfect alignment
-- **Typography**: Inter font family with proper hierarchy
-- **Color Palette**: Carefully crafted color schemes for each service
-
-### Dark Mode
-- **System Preference Detection**: Automatically detects user's system theme
-- **Persistent State**: Remembers user's theme choice across sessions
-- **Smooth Transitions**: Elegant theme switching animations
-- **Accessibility**: High contrast ratios for better readability
-
-### Responsive Design
-- **Breakpoints**: Tailwind CSS responsive breakpoints
-- **Touch Friendly**: Large touch targets and intuitive gestures
-- **Collapsible UI**: Space-efficient design for smaller screens
-
-## 🔧 Development
-
-### Adding New AWS Services
-
-The application is designed to easily add new AWS services:
-
-1. **Add Service Configuration**:
-   ```typescript
-   // src/lib/services-config.ts
-   {
-     id: 'new-service',
-     name: 'New Service',
-     fullName: 'AWS New Service',
-     shortName: 'Service',
-     icon: NewIcon,
-     color: 'text-purple-600',
-     bgColor: 'bg-purple-50',
-     borderColor: 'border-purple-200',
-     hoverColor: 'hover:bg-purple-100',
-     status: 'active',
-     category: 'Category',
-     description: 'Service description',
-     features: ['Feature 1', 'Feature 2']
-   }
-   ```
-
-2. **Create Service Manager**:
-   ```typescript
-   // src/components/NewServiceManager.tsx
-   export function NewServiceManager({ isSettingsVisible }: Props) {
-     // Service-specific UI and logic
-   }
-   ```
-
-3. **Add API Routes**:
-   ```typescript
-   // src/app/api/new-service/route.ts
-   export async function GET(request: NextRequest) {
-     // API implementation
-   }
-   ```
-
-4. **Update Service Router**:
-   ```typescript
-   // src/app/[service]/page.tsx
-   case 'new-service':
-     return <NewServiceManager isSettingsVisible={isSettingsVisible} />
-   ```
-
-### Development Commands
-
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-```
-
-### Code Quality
-
-- **TypeScript**: Strict type checking enabled
-- **ESLint**: Configured with Next.js recommended rules
-- **Prettier**: Code formatting (if configured)
-- **Component Testing**: Ready for testing framework integration
-
 ## 🐳 Docker Configuration
 
 ### Docker Compose Services
@@ -414,75 +284,6 @@ If you need to reset or reinitialize sample data:
 ./localstack-init/04-iam-setup.sh
 ```
 
-## 🌐 Deployment
-
-### LocalStack Development
-
-1. **Using Docker (Recommended)**:
-   ```bash
-   npm run docker:up
-   ```
-
-2. **Using LocalStack directly**:
-   ```bash
-   pip install localstack
-   localstack start
-   ```
-
-3. **Verify Connection**:
-   Visit [http://localhost:4566](http://localhost:4566)
-
-### Production Deployment
-
-1. **Configure AWS Credentials**:
-   ```bash
-   aws configure
-   ```
-
-2. **Update Configuration**:
-   Modify the AWS configuration in the Settings panel
-
-3. **Deploy with Docker**:
-   ```bash
-   # Build production image
-   docker build -t cloudglass .
-   
-   # Run with production AWS config
-   docker run -p 3000:3000 \
-     -e AWS_ACCESS_KEY_ID=your_key \
-     -e AWS_SECRET_ACCESS_KEY=your_secret \
-     -e AWS_DEFAULT_REGION=us-east-1 \
-     cloudglass
-   ```
-
-4. **Deploy to Cloud Platforms**:
-   ```bash
-   npm run build
-   # Deploy the .next folder or use Docker
-   ```
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Run tests: `npm run lint`
-5. Commit your changes: `git commit -m 'Add amazing feature'`
-6. Push to the branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
-
-### Code Style
-
-- Follow the existing code style and patterns
-- Use TypeScript for all new code
-- Add proper error handling
-- Include dark mode support for new UI components
-- Write descriptive commit messages
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -498,9 +299,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Documentation**: [GitHub Wiki](https://github.com/yourusername/cloudglass/wiki)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/cloudglass/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/cloudglass/discussions)
+- **Issues**: [GitHub Issues](https://github.com/synaxz/cloudglass/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/synaxz/cloudglass/discussions)
 
 ---
 
