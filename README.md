@@ -1,6 +1,8 @@
 # CloudGlass
 
-A modern, responsive web application for managing cloud infrastructure with a beautiful glass-like interface. Built with Next.js 15, React 19, and TypeScript.
+A modern, responsive web application for managing AWS/Localstack with a beautiful glass-like interface. Built with Next.js 15, React 19, and TypeScript.
+
+<img width="1693" height="978" alt="image" src="https://github.com/user-attachments/assets/b60e1be2-4df8-42f2-b3ac-e3ac9002f80d" />
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.0-blue?style=flat-square&logo=react)](https://reactjs.org/)
